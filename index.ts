@@ -93,4 +93,4 @@ async function main() {
     // Run checker for file
 }
 
-main().catch(err => console.error)
+main().catch((err) => console.error(err))
