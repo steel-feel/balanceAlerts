@@ -1,5 +1,5 @@
 import { createPublicClient, extractChain, http, parseEther } from "viem";
-import type { Address } from "viem";
+import type { Address, PublicClient } from "viem";
 import * as chains from "viem/chains"
 import { parse as parseToml } from 'toml'
 
@@ -12,7 +12,42 @@ type LowBalanceResponse = {
     message: string
 }
 
-async function lowBalance(chainId: any, account: Address, threshold: bigint): Promise<LowBalanceResponse> {
+async function fetchEthBalance(client: PublicClient, account: Address): Promise<bigint> {
+ return client.getBalance({
+        address: account
+    })
+}
+
+async function fetchErc20Balance(client: PublicClient, account: Address, tokenAddress:Address): Promise<bigint> {
+ const resp = await client.readContract({
+  address: tokenAddress,
+  abi: [{
+  "constant": true,
+  "inputs": [
+    {
+      "name": "_owner",
+      "type": "address"
+    }
+  ],
+  "name": "balanceOf",
+  "outputs": [
+    {
+      "name": "balance",
+      "type": "uint256"
+    }
+  ],
+  "type": "function"
+}],
+  functionName: 'balanceOf',
+  args: [account],
+}) as bigint
+
+console.log(`${account} Token ${tokenAddress} balance: ${resp}`);
+
+ return resp
+}
+
+async function lowBalance(chainId: any, account: Address, tokenAddress: Address, threshold: bigint): Promise<LowBalanceResponse> {
     const chain = extractChain({
         chains: Object.values(chains),
         id: chainId,
@@ -22,10 +57,7 @@ async function lowBalance(chainId: any, account: Address, threshold: bigint): Pr
         chain: chain,
         transport: http(),
     })
-
-    const balance = await client.getBalance({
-        address: account
-    })
+    const balance = tokenAddress.length < 3 ? await fetchEthBalance(client as any, account) : await fetchErc20Balance(client as any, account, tokenAddress)
 
     const bLowBalance = balance < threshold
     const message = bLowBalance ? `Address: ${account} at Network "${chain.name}" have ${bLowBalance ? "Low" : "Enough"} balance` : "";
@@ -37,6 +69,7 @@ async function lowBalance(chainId: any, account: Address, threshold: bigint): Pr
         message
     }
 }
+
 
 async function sendAlert(content: string) {
     const SLACK_API = config.slack_api.url
@@ -75,12 +108,23 @@ async function main() {
 
     while (true) {
         try {
+            //faucet accounts
             for (var chains of config.faucet.networks.eth) {
-                const resp = await lowBalance(chains.chainId, config.faucet.account, chains.threshold)
+                const resp = await lowBalance(chains.chainId, config.faucet.account,"0x",chains.threshold)
                 if (resp.error) {
-                    await sendAlert(resp.message)
+                    await sendAlert(`Faucet ${resp.message}`)
                 }
             }
+
+            for (var solver of config.solvers) {
+                  for (var token of solver.tokens) {
+                    const resp = await lowBalance(solver.chainId, solver.account, token.address, token.threshold)
+                    if (resp.error) {
+                        await sendAlert(`Solver ${solver.name} ${resp.message}`)
+                    }
+                  }
+            }
+
             //TODO: for other networks
 
         }
