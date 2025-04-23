@@ -9,16 +9,29 @@ Configuration file required for service
 ```toml
 [slack_api]
 url = "<slack-url>"
-[faucet]
-account = "<facucet-gas-provider-account>"
-[faucet.networks]
-[[faucet.networks.eth]]
-chainId = <chain-id-e.g. 10>
-threshold = "<threshold balance in ETH(unit)>"
-...
-...
-..
+[[chains]]
+# Optimism
+chainId = 10
+  # faucet
+  [[chains.tokens]]
+  token = ""
+  threshold =  "0.00000055"
+  accounts = [ "<address1>" , "<address2>"]
+  
+  [[chains.tokens]]
+  token = ""
+  threshold =  "0.00000001"
+  accounts = [ "<address1>" , "<address2>"]
 
+[[chains]]
+chainId = 534352
+ # faucet
+ [[chains.tokens]]
+  token = ""
+  threshold = "0.000018"
+  accounts =  [ "<address1>" , "<address2>"]
+
+# ---- Clip ---- 
 ```
 ### Installation
 To install dependencies:
