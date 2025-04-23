@@ -44,8 +44,8 @@ async function main() {
                             Account : ${account}
                             Token: ${token.length < 3 ? "GAS" : token}
                             Chain : ${chain.chainId}
-                            Current balance: ${balance}
-                            Threshold: ${threshold}
+                            Current balance: ${formatEther(balance)}
+                            Threshold: ${formatEther(threshold)}
                         `
 
                             console.log(msg)
