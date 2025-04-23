@@ -13,38 +13,38 @@ type LowBalanceResponse = {
 }
 
 async function fetchEthBalance(client: PublicClient, account: Address): Promise<bigint> {
- return client.getBalance({
+    return client.getBalance({
         address: account
     })
 }
 
-async function fetchErc20Balance(client: PublicClient, account: Address, tokenAddress:Address): Promise<bigint> {
- const resp = await client.readContract({
-  address: tokenAddress,
-  abi: [{
-  "constant": true,
-  "inputs": [
-    {
-      "name": "_owner",
-      "type": "address"
-    }
-  ],
-  "name": "balanceOf",
-  "outputs": [
-    {
-      "name": "balance",
-      "type": "uint256"
-    }
-  ],
-  "type": "function"
-}],
-  functionName: 'balanceOf',
-  args: [account],
-}) as bigint
+async function fetchErc20Balance(client: PublicClient, account: Address, tokenAddress: Address): Promise<bigint> {
+    const amount = await client.readContract({
+        address: tokenAddress,
+        abi: [{
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_owner",
+                    "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                    "name": "balance",
+                    "type": "uint256"
+                }
+            ],
+            "type": "function"
+        }],
+        functionName: 'balanceOf',
+        args: [account],
+    }) as bigint
 
-console.log(`${account} Token ${tokenAddress} balance: ${resp}`);
+    console.log(`${account} Token ${tokenAddress} balance: ${amount}`);
 
- return resp
+    return amount
 }
 
 async function lowBalance(chainId: any, account: Address, tokenAddress: Address, threshold: bigint): Promise<LowBalanceResponse> {
@@ -95,7 +95,7 @@ async function loadConfig(path: string = "config.toml") {
         ele.threshold = parseEther(ele.threshold)
         return ele
     })
-    
+
     return config
 }
 
@@ -110,19 +110,19 @@ async function main() {
         try {
             //faucet accounts
             for (var chains of config.faucet.networks.eth) {
-                const resp = await lowBalance(chains.chainId, config.faucet.account,"0x",chains.threshold)
+                const resp = await lowBalance(chains.chainId, config.faucet.account, "0x", chains.threshold)
                 if (resp.error) {
                     await sendAlert(`Faucet ${resp.message}`)
                 }
             }
 
             for (var solver of config.solvers) {
-                  for (var token of solver.tokens) {
+                for (var token of solver.tokens) {
                     const resp = await lowBalance(solver.chainId, solver.account, token.address, token.threshold)
                     if (resp.error) {
                         await sendAlert(`Solver ${solver.name} ${resp.message}`)
                     }
-                  }
+                }
             }
 
             //TODO: for other networks
