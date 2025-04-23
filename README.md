@@ -1,6 +1,8 @@
 # Low Balance Alerts
 This project monitors the balances of Faucet, Solver and VSC accounts, trigger alerts to slack channel.
 
+![alt text](./images/LowBalanceSlack.png)
+
 ## Requirements
 This project was created using `bun v1.0.30`. Install [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
 
