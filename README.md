@@ -1,5 +1,6 @@
 # Low Balance Alerts
-This project monitors the balances of Faucet, Solver and VSC accounts, trigger alerts to slack channel.
+This project monitors the balances of Ethereum accounts on configured EVM chains with threshold values.
+The alerts will be triggerred slack channel.
 
 ![alt text](./images/LowBalanceSlack.png)
 
@@ -7,17 +8,21 @@ This project monitors the balances of Faucet, Solver and VSC accounts, trigger a
 This project was created using `bun v1.0.30`. Install [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
 
 ## Config file
-Configuration file required for service
+
+
 ```toml
+# config.toml
 [slack_api]
 url = "<slack-url>"
 [[chains]]
 # Optimism
-chainId = 10
+chainId = 10 
   # faucet
   [[chains.tokens]]
+   # erc20 token address, leave empty for gas token
   token = ""
-  threshold =  "0.00000055"
+  # in Unit (Ethers)
+  threshold =  "0.00000055" 
   accounts = [ "<address1>" , "<address2>"]
   
   [[chains.tokens]]
