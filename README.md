@@ -21,7 +21,7 @@ chainId = 10
   [[chains.tokens]]
    # erc20 token address, leave empty for gas token
   token = ""
-  # in Unit (Ethers)
+  # in (Ethers) Unit
   threshold =  "0.00000055" 
   accounts = [ "<address1>" , "<address2>"]
   
