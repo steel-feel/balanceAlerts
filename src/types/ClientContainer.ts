@@ -4,7 +4,7 @@ import type { Address } from "viem";
 
 
 export class ClientContainer {
-    private client: any 
+    private client: any
 
     constructor(chainId: any) {
         this.client = createPublicClient({
@@ -47,11 +47,11 @@ export class ClientContainer {
         })
         //@ts-ignore
         const balance = await erc20Contract.read.balanceOf([account]) as bigint
-         //@ts-ignore
+        //@ts-ignore
         const decimals = await erc20Contract.read.decimals() as number
-        
+
         const formatedAmt = parseUnits(String(balance), 18 - decimals)
-     
+
         return formatedAmt
     }
 

@@ -8,14 +8,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function main() {
 
     const clients = new Map<string, ClientContainer>();
-    const config = await loadConfig("./config.toml")
+    const config = await loadConfig(Bun.env.BALANCE_ALERT_CONFIG)
     const slackAlert = new SlackAlert(config.slack_api.url)
     const chainIds = config.chains.map((chain: any) => chain.chainId)
 
     //Init clients 
     for (const chainId of chainIds) {
-        const clientContainer = new ClientContainer(chainId)
-        clients.set(chainId, clientContainer)
+        clients.set(chainId, new ClientContainer(chainId))
     }
 
     while (true) {
@@ -27,8 +26,7 @@ async function main() {
                     for (const account of chainEntry.accounts) {
 
                         let balance: bigint = BigInt(0)
-                      
-                        
+
                         if (token.length < 3) {
                             // ETH
                             balance = await clients.get(chain.chainId).getEthBalance(account)
@@ -37,7 +35,7 @@ async function main() {
                             balance = await clients.get(chain.chainId).getErc20Balance(account, token as Address)
                         }
                         console.log(` Chain: ${chain.chainId} Account: ${account} Token: ${token.length < 3 ? "Gas" : token}  Balance: ${formatEther(balance)} Threshold: ${formatEther(threshold)} \n`);
-                        
+
                         if (threshold > balance) {
                             const msg = `
                         Low Balance Alert  

@@ -8,7 +8,7 @@ The alerts will be triggerred slack channel.
 This project was created using `bun v1.0.30`. Install [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
 
 ## Config file
-
+Set `BALANCE_ALERT_CONFIG` enviorment variable config file path.
 
 ```toml
 # config.toml
