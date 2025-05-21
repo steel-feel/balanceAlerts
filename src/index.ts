@@ -24,14 +24,14 @@ async function main() {
                     const threshold = parseEther(chainEntry.threshold || "0") ?? 0n
                     const token = chainEntry.token as string
                     for (const account of chainEntry.accounts) {
-                        let balance: bigint = BigInt(0)
-                        
+                        let balance: bigint = BigInt(0),
+                            msg = null
                         if (token.length < 3) {
                             // ETH
                             try {
                                 balance = await clients.get(chain.chainId).getEthBalance(account)
                             } catch (err) {
-                                console.error(err)
+                                msg = `Error fetching balance for ${account} on ${chain.chainId} of ${token.length < 3 ? "GAS" : token}: ${err}`
                                 continue
                             }
                         } else {
@@ -39,14 +39,14 @@ async function main() {
                             try {
                                 balance = await clients.get(chain.chainId).getErc20Balance(account, token as Address)
                             } catch (err) {
-                                console.error(err)
+                                msg = `Error fetching balance for ${account} on ${chain.chainId} of ${token.length < 3 ? "GAS" : token}: ${err}`
                                 continue
                             }
                         }
                         console.log(`Chain: ${chain.chainId} Account: ${account} Token: ${token.length < 3 ? "Gas" : token}  Balance: ${formatEther(balance)} Threshold: ${formatEther(threshold)} \n`);
 
                         if (threshold > balance) {
-                            const msg = `
+                            msg = `
                         Low Balance Alert  
                             Account : ${account}
                             Token: ${token.length < 3 ? "GAS" : token}
@@ -54,9 +54,9 @@ async function main() {
                             Current balance: ${formatEther(balance)}
                             Threshold: ${formatEther(threshold)}
                         `
+                        }
 
-                            console.log(msg)
-
+                        if (msg) {
                             await slackAlert.sendAlert(msg)
                         }
                     }
