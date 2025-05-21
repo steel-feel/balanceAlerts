@@ -1,5 +1,5 @@
 import { parseEther, formatEther, type Address } from "viem";
-import { loadConfig } from './utils/config'
+import { loadConfig, initDB } from './utils/config'
 import { ClientContainer } from './types/ClientContainer'
 import { SlackAlert } from "./types/SlackAlert";
 
@@ -11,6 +11,7 @@ async function main() {
     const config = await loadConfig(Bun.env.BALANCE_ALERT_CONFIG)
     const slackAlert = new SlackAlert(config.slack_api.url)
     const chainIds = config.chains.map((chain: any) => chain.chainId)
+    const db = initDB()
 
     //Init clients 
     for (const chainId of chainIds) {
