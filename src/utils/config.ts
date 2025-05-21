@@ -8,7 +8,7 @@ export async function loadConfig(path: string = "./config.toml") {
     return config
 }
 
-export async function initDB() {
+export function initDB() {
     const db = new PouchDB('Alerts');
     return db;
 }
