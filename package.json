@@ -12,8 +12,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@types/pouchdb": "^6.4.2",
-    "pouchdb": "^9.0.0",
     "toml": "^3.0.0",
     "viem": "^2.22.21"
   }
