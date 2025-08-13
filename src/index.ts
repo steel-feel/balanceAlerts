@@ -1,4 +1,4 @@
-import { parseEther, formatEther, type Address } from "viem";
+import { parseEther, formatEther, type Address, parseUnits, formatUnits } from "viem";
 import { loadConfig, initDB } from './utils/config'
 import { ClientContainer } from './types/ClientContainer'
 import { SlackAlert } from "./types/SlackAlert";
@@ -22,15 +22,18 @@ async function main() {
         try {
             for (const chain of config.chains) {
                 for (const chainEntry of chain.tokens) {
-                    const threshold = parseEther(chainEntry.threshold || "0") ?? 0n
+                    let threshold;
+                    let threshold_decimals = 18;
                     const token = chainEntry.token as string
                     for (const account of chainEntry.accounts) {
                         let balance: bigint = BigInt(0),
                             msg = null
                         if (token.length < 3) {
+                            threshold = parseEther(chainEntry.threshold || "0")
                             // ETH
                             try {
                                 balance = await clients.get(chain.chainId).getEthBalance(account)
+                                
                             } catch (err) {
                                 msg = `Error fetching balance for ${account} on ${chain.chainId} of ${token.length < 3 ? "GAS" : token}: ${err}`
                                 continue
@@ -38,7 +41,10 @@ async function main() {
                         } else {
                             // ERC20
                             try {
-                                balance = await clients.get(chain.chainId).getErc20Balance(account, token as Address)
+                               const resErc20 = await clients.get(chain.chainId).getErc20Balance(account, token as Address)
+                                threshold = parseUnits(chainEntry.threshold ,resErc20.decimals)
+                                threshold_decimals = resErc20.decimals;
+                                balance = resErc20.value
                             } catch (err) {
                                 msg = `Error fetching balance for ${account} on ${chain.chainId} of ${token.length < 3 ? "GAS" : token}: ${err}`
                                 continue
@@ -52,7 +58,7 @@ async function main() {
                             Account : ${account}
                             Token: ${token.length < 3 ? "GAS" : token}
                             Chain : ${chain.chainId}
-                            Current balance: ${formatEther(balance)}
+                            Current balance: ${ formatUnits( balance, threshold_decimals) }
                             Threshold: ${formatEther(threshold)}
                         `
                         }

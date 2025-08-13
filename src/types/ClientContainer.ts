@@ -2,6 +2,10 @@ import { createPublicClient, extractChain, http, formatUnits, getContract, parse
 import * as chains from "viem/chains"
 import type { Address } from "viem";
 
+export type Erc20Response = {
+    value: bigint,
+    decimals: number
+}
 
 export class ClientContainer {
     private client: any
@@ -20,7 +24,7 @@ export class ClientContainer {
         return this.client.getBalance({ address: account })
     }
 
-    async getErc20Balance(account: Address, tokenAddress: Address): Promise<bigint> {
+    async getErc20Balance(account: Address, tokenAddress: Address): Promise<Erc20Response> {
 
         const erc20Contract = getContract({
             address: tokenAddress,
@@ -52,7 +56,7 @@ export class ClientContainer {
 
         const formatedAmt = parseUnits(String(balance), 18 - decimals)
 
-        return formatedAmt
+        return { value : formatedAmt, decimals }
     }
 
 
